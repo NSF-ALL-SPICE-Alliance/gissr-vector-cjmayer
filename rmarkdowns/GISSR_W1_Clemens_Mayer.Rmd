@@ -1,0 +1,40 @@
+```{r}
+ggplot(data=world) + 
++     geom_sf() +
++     ggtitle("Landen van de Wereld", subtitle = "Gemaakt door Clemens Mayer")
+```
+
+```{r}
+world_wo_australia = world %>%
++     filter(iso_a3 != "AUS")
+```
+
+```{r}
+ggplot() +
++     geom_sf(data = world_wo_antarctica,
++             fill = "#458b00" , color = "#004225", size = 0.25) +
++         ggtitle("Landen van de Wereld", subtitle = "zonder Antarctica")
+```
+
+```{r}
+ggplot() +
++     geom_sf(data = world_wo_antarctica,
++             aes(fill = as.factor(mapcolor7)) , color = "#004225", size = 0.25) +
++     theme_void() +
++     scale_fill_brewer(palette = "Spectral") +
++     guides(fill = "none")
+```
+
+```{r}
+ggplot() +
++     geom_sf(data = world_wo_antarctica,
++             fill = "#458b00" , color = "#004225", size = 0.25) +
++         ggtitle("Landen van de Wereld", subtitle = "zonder Antarctica") +
++     theme_void() +
++     coord_sf(crs = "+proj=ortho +lat_0=21 +lon_0=-157") + 
++     ggtitle("Honolulu, HI as the Center of the World", subtitle = "Orthographic Azimuthal")
+```
+
+
+
+
