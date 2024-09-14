@@ -1,0 +1,83 @@
+```{r}
+#Challenges week 2:
+#General comment: I would love to see whether the dataset we use has enough detailed lower-level (coordinate/polygon) data for this to be feasible with (very) small islands.
+ggplot(data = world) +
+    geom_sf() +
+    coord_sf(xlim = c(1.41, 7.3), ylim = c(48.9, 54.7), expand = FALSE) +
+    ggtitle("The BeNeLux")+
+    theme_void()
+
+#I also tried this with Yap and Eauripik, but they are too small to be (effectively) displayed, even with precise coordinates:
+# ggplot(data = world) +
+#     geom_sf() +
+#     coord_sf(xlim = c(143.074443, 143.081008), ylim = c(6.681524, 6.684465), expand = FALSE) +
+#     ggtitle("Eauripik Atoll")+
+#     theme_void()
+#ggplot(data = world) +
+#    geom_sf() +
+#    coord_sf(xlim = c(137.986, 138.261), ylim = c(9.682, 9.412), expand = FALSE) +
+#    ggtitle("Yap Island")+
+#    theme_void()
+```
+
+
+```{r}
+state = (ne_states(c(country = "Netherlands", country = "Belgium", country = "Luxembourg")))
+#Additionally made one for countries for labels, but the polygons are too rough:
+country = ne_countries(continent = "Europe")
+```
+
+```{r}
+ggplot() +
+    geom_sf(data = world) +
+    geom_sf(data = state) +
+   coord_sf(xlim = c(1.41, 7.3), ylim = c(48.9, 54.7), expand = FALSE) +
+    ggtitle("The BeNeLux")+
+    theme_void()
+```
+
+```{r}
+ggplot() +
+    geom_sf(data = world) +
+    geom_sf(data = state) +
+    geom_sf(data = lakes50) +
+    geom_sf(data = rivers50) +
+   coord_sf(xlim = c(1.41, 7.3), ylim = c(48.9, 54.7), expand = FALSE) +
+    ggtitle("The BeNeLux")+
+    theme_void()
+```
+
+```{r}
+ggplot() +
+    geom_sf(data = world, fill = "lightgray") +
+    geom_sf(data = state, fill = "lightgreen") +
+    geom_sf(data = lakes50, fill = "lightblue" ) +
+    geom_sf(data = rivers50, fill = "navy") +
+    geom_sf_text(data = country, aes(label=name), size = 2, fontface = "bold", nudge_y = state$nudge_y) +
+   coord_sf(xlim = c(1.41, 7.3), ylim = c(48.9, 54.7), expand = FALSE) +
+    ggtitle("The BeNeLux")+
+    theme_void()
+#I opted for country names rather than province names, as the latter was too messy
+```
+
+```{r}
+luxembourg = state %>%
+    filter(admin == "Luxembourg")
+#Here opted for state over country because of the detail
+```
+
+
+```{r}
+ggplot() +
+    geom_sf(data = world, fill = "lightgray") +
+    geom_sf(data = state, fill = "lightgreen") +
+    geom_sf(data = lakes50, fill = "lightblue" ) +
+    geom_sf(data = rivers50, fill = "navy") +
+    geom_sf(data = luxembourg, fill="chartreuse", color = "red") +
+    geom_sf_text(data = country, aes(label=name), size = 2, fontface = "bold", nudge_y = state$nudge_y) +
+    coord_sf(xlim = c(1.41, 7.3), ylim = c(48.9, 54.7), expand = FALSE) +
+    ggtitle("The BeNeLux")+
+    theme_void()
+```
+
+
