@@ -1,0 +1,72 @@
+#Challenge 1: Find the place_id that corresponds to your target area and choose a genus or species you want to map and find the taxon_id.
+
+```{r}
+inat_obs_df = get_inat_obs(taxon_id = 47902,
+                            place_id = 8240,
+                            quality = "research",
+                            geo = TRUE,
+                            maxresults = 100)
+
+save(inat_obs_df, file = "Malta_PricklyPear_inat.Rdata")
+```
+
+
+#Challenge 2: Create a static map using the ggplot function of your target area and target genus/species.
+```{r}
+p_malta <- ggplot() +
+  geom_sf(data = malta_streets$osm_lines, inherit.aes = FALSE, color = "#ffbe7f", size = .4, alpha = .8) +
+  geom_sf(data = malta_small_streets$osm_lines, inherit.aes = FALSE, color = "#a6a6a6", size = .2, alpha = .8) +
+  geom_sf(data = malta_coast$osm_lines, inherit.aes = FALSE, color = "black", size = .8, alpha = .5) +
+  geom_sf(data = malta_np$osm_polygons, inherit.aes = FALSE, color = "brown", size = .2, alpha = .8) +
+  geom_sf(data = malta_protected$osm_polygons, inherit.aes = FALSE, color = "green", size = .2, alpha = .8) +
+  geom_point(data = inat_obs_df, aes(x = longitude, y = latitude, color = common_name, text = common_name)) +
+  geom_sf_text(size = 1, data = malta_protected$osm_polygons, aes(label = name)) +
+ coord_sf(xlim = c(14.1, 14.7), ylim = c(35.75, 36.2), expand = TRUE) +
+  ggtitle("Prickly Pear on Malta", subtitle = "Based on iNaturalist Data as of October 2024") +
+  theme_bw() +
+  labs(
+    color="Common Name",
+    x = "Longitude",
+    y = "Latitude"
+  ) 
+```
+
+```{r}
+ggplotly(p_malta,
+         tooltip = c("text"))
+```
+
+
+```{r}
+inat_obs_popup_sf <- inat_obs_sf %>% 
+  mutate(popup_html = paste0("<p><b>", common_name, "</b><br/>",
+                             "<i>", scientific_name, "</i></p>",
+                             "<p>Observed: ", datetime, "<br/>",
+                             "User: ", user_login, "</p>",
+                             "<p><img src='", image_url, "' style='width:100%;'/></p>")
+  )
+```
+
+
+#Challenge 3: Create an interactive map using the leaflet function of your target area and target genus/species.
+```{r}
+htmltools::p_malta("iNaturalist Observations of Prickly Pears on Malta",
+             htmltools::br(),
+             inat_obs_popup_sf$datetime %>% 
+               as.Date() %>% 
+               range(na.rm = TRUE) %>% 
+               paste(collapse = " to "),
+             style = "font-weight:bold; font-size:110%;")
+
+```
+
+```{r}
+leaflet(inat_obs_sf) %>% 
+  setView(lng = 14.4, lat = 35.9, zoom = 10)%>%
+  addTiles() %>% 
+  addCircleMarkers(data = inat_obs_popup_sf,
+                   popup = ~popup_html, 
+                   radius = 5)
+```
+
+
