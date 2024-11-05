@@ -1,0 +1,54 @@
+```{r}
+available_tags("landuse")
+```
+
+```{r}
+bb = getbb("Leiden")
+#Tried Eauripik and Woleai again, but schools and most other features are not mapped.Tried Yap also, but elements are only very partially mapped.
+```
+
+
+```{r}
+streets = bb %>%
+  opq() %>%
+  add_osm_feature("highway", c("motorway", "primary", "secondary", "tertiary")) %>%
+  osmdata_sf()
+
+small_streets = bb %>%
+  opq() %>%
+  add_osm_feature(key = "highway", value = c("residential", "living_street", "unclassified", "service", "footway")) %>%
+  osmdata_sf()
+
+coastline = bb %>%
+  opq() %>%
+  add_osm_feature(key = "natural", value = "coastline") %>%
+  osmdata_sf()
+```
+
+```{r}
+ggplot() +
+    geom_sf(data = streets$osm_lines, inherit.aes = FALSE, color = "#db7d02", size = .4, alpha = .8) +
+    geom_sf(data = small_streets$osm_lines, inherit.aes = FALSE, color = "#a6a6a6", size = .2, alpha = .8) +
+    geom_sf(data = schools$osm_polygons, inherit.aes = FALSE, colour = "red", fill = "red", alpha = .5, size = 1) +
+    coord_sf(xlim = c(4.438865, 4.524072), ylim = c(52.118952, 52.184626), expand = TRUE) +
+    geom_sf_text(data = schools$osm_polygons, aes(label = name), size = 2, hjust = 0) +
+    theme_bw() +
+    labs(
+        title = "Schools in Leiden",
+        x = "Longitude",
+        y = "Latitude"
+    )
+#Removed the coastlines feature as it is not relevant here.
+```
+
+```{r}
+#Can't detect any mistakes in my code and it runs without errors/warnings, but doesn't show up on the viewer. Is visible and working when exported to .html though.
+leaflet() %>%
+    addTiles() %>%
+    addPolygons(
+        data = schools$osm_polygons,
+        label = schools$osm_polygons$name
+    )
+```
+
+

@@ -1,6 +1,6 @@
 ---
-title: "Final Challenge Instructions"
-author: "Catherine Brockway"
+title: "GIS For Sustainability and Resilience, Techniques Final Project: The Spread of Invasive Species Through the Hawaiian Islands"
+author: "Clemens Mayer"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -9,94 +9,189 @@ output:
     toc_float: TRUE
 ---
 
+<!--NB: Due to the large amount of data in the leaflet map at the end of this document, it may take a long time to render. For faster rendering, comment out leaflet map. -->
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/gissr-vector-cjmayer")
 library("vembedr")
+library("ggplot2")
+library("ggspatial")
+library("sf")
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("stars")
+library("ggmap")
+library("leaflet")
+library("raster")
+library("dplyr")
+library("here")
 ```
-
 <img src="`r here::here('Images/ALL-SPICE.png')`" width="240" /> <img src="`r here::here('Images/3_CIFAL.png')`" width="200" />
 
-Your final challenge in this course is to choose a location that is important to you and to produce maps that illustrate aspects of sustainability and/or resilience in that location. Each map should tell a story that will inspire people to take action to increase sustainability/resilience in your chosen location. 
+## Introduction: The Hawaiian Islands and Invasive Species
+The Hawaiian Islands are a volcanic island chain in the middle of the Pacific Ocean. They consist of 7 inhabited islands, located at the southeastern end of the chain, and a large number of uninhabited islands, named the *Leeward Islands*. This project will focus on the southeastern, inhabited islands only.
 
-This final project can be in any language you are comfortable using. I would love to see projects in your native language if it is not English! If you need help translating the text in your maps, please reach out to the instructor.
+&nbsp;
+<center>
+<img src="`r here::here('Hawaiian_Islands.png')`" width="600" height=auto />
+</center>
+&nbsp;
 
-## Target Area
 
-Choose a location that is *meaningful to you*. This can be where you currently live, your hometown, where your family is from, etc. I recommend choosing a location that is larger than a neighborhood and smaller than a large country (e.g. United States, China).
+The Hawaiian islands, being a remote island chain in the middle of the Pacific Ocean, has ecosystems that are relatively fragile, and especially vulnerable to invasive species. This is due to its island nature: The endemic species of flora and fauna that have evolved here over the past several millions years have done in relatively fixed ecosystem. This does not mean that there is no biotic interchange on remote islands. Rather, interchange is incredibly slow and only due to long-distance aquatic or aerial travel capacities, being carried by such hosts (such as seed by birds), or, much more recently, through anthropogenic introduction. Thus, endemic Hawaiian species are incredibly adapted to their local ecosystems, but have few defenses against differently-evolved external species.
+The first major introduction of non-endemic species occurred with the first settling of the Hawaiian islands around 1,000 years ago by Austronesians from the Society Islands. This introduced many so-called *waʻa plants*, such as kalo (taro), tī, ʻolena (turmeric), ʻulu (breadfruit), and many more. As many of these species now grow wild throughout the Hawaiian islands, these are technically also invasive species. However, their adaptations to thrive in island ecosystems, and most likely carefully chosen features by their introducers, mean that these species generally do not dominate and deteriorate ecosystems (though not all, cf. feral pigs).
 
-All of your maps will show data related to this target area, though maps may be at different scales depending on the available data.
+However, since the start of continued relationships of the Hawaiian Islands with external landmasses, especially North American and (South-East) Asia, there has been a massive increase of invasive species throughout the Islands in the last 150 or so years. Factors include agriculture, cattle farming, ornamentals, and accidental introduction. Invasives include well-known flora and fauna such as mongoose, cockroaches, mosquitoes, elephant grass, and guava, but also some that are seen as iconic for the Hawaiian islands such as Myna birds, Crown Flower, and Plumerias.
+Due to an all-time high, and ever increasing, degree of contact with Hawaii with other landmasses, invasive species are seemingly almost constantly introduced, and in some cases have devastating effects on local ecosystems. Although there are many smaller and larger efforts to fight invasive species, it is a constant uphill battle.
 
-## Sustainability and Resilience Topics
+This project focuses on three such uphill battles of three small but hugely detrimental animals: The coqui frog, the coconut rhinoceros beetle (CRB), and the Little Fire Ant (LFA). I have chosen to focus on these three species because they are very invasive, form a large threat to human and ecosystem health, and are not fully established throughout the Hawaiian Islands. The latter point is especially important here because it means that visibility of these issues, and the coming together of community and state-based agencies can mean that these species can still be stopped from establishing universally throughout the islands. The main focus, however, will be on coqui frogs, as these seem to have the largest amount of observation data available.
 
-You may choose any topics related to sustainability and/or resilience that you are interested in and that *you can quickly find data for*; you want to focus most of your time on building, improving, and interpreting your maps, not on finding, cleaning, and wrangling data.
 
-I recommend using APIs for OpenStreetMap and/or iNaturalist for your first two required maps, since you already know how to use them to retrieve data, and they should have at least some data available for your location. 
 
-## The Assignment
+## Coqui frog (*Eleutherodactylus coqui*)
+The Coqui frog is well-establish on Hawaii Island at this point, especially on the Northeastern side, such as in Puna. However, recently there have been increasing observations of occurrences on other islands, notably Oʻahu. Although (public) observations generally lag behind on actual spread, some observations have been noted in recent years, as shown in the animated map below. Additionally, certain agencies, such as the Hawaii Department of Forestry and Wildlife (DOFAW), who are currently working with community members in fighting Coqui, are currently not publicly sharing their observations, whether they have been collected by community members or their staff (Ryan Chang, DOFAW employee, pers. comm.).
 
-### Step 1: Edit this RMarkdown ("Final_Challenge.Rmd)
+<center>
+<img src="`r here::here('coqui_animated.gif')`" class="center" />
+</center>
 
-Leave these instructions at the bottom of your .rmd until you have finished the rest of the assignment, so you can easily refer to them. 
+It is interesting to see that the major colonies of coqui are clustered in certain areas, mainly the east. To see what might be causing this, I introduced raster layers for annual mean temperature and annual precipitation. The data used for this stems [WorldClim](https://www.worldclim.org/), using the Bioclimatic variables 30 seconds (bio 30s) data. In order to visualize possible confounding effects of the spread of Coqui, these maps are focused on Hawaii Island.
 
-Fill out the YAML header with your project title, your name, and choose a theme that you like. See this [guide](https://rpubs.com/ranydc/rmarkdown_themes) for help with setting a theme.
+&nbsp;
+<center>
+<img src="`r here::here('coqui_temperature.png')`" class="center" />
+</center>
+&nbsp;
 
-I recommend a title like this: "Topic1 and Topic2 in Location", where you fill in the topics you cover and the location you choose.
+We can see somewhat of a pattern here, although it is not very clear. The Coqui seems to stay out of the warmest areas in the northwest and extreme south, and the elevated, colder, inland zones. It seems that the *Goldilock* temperature range for the Coqui is between 15 and 20 degrees Celsius.
+However, we still see occurrences in hot areas, such as on the Western side of the island, as well as a smattering of observations towards the southern tip of the island. A more clear pattern emerges when we combine this with precipitation data:
 
-Use this [guide](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf) for help with formatting your RMarkdown, for example, using bold or italics, creating headers, adding images, etc.
+&nbsp;
+<center>
+<img src="`r here::here('coqui_precipitation.png')`" class="center" />
+</center>
+&nbsp;
 
-### Step 2: Create your sections
+In this map we can see that, with a few outliers, Coqui occur in areas with a high amount of rainfall. When looking at the western side of the island, it shows that Coqui fit right into a strip along the coast where there is a lot of rainfall, but still a comfortable temperature for them due to relatively low elevation.
 
-Each section should have a header with the title of the section. This will organize your project, and will automatically fill your table of contents. 
+As shown in the maps above, Coqui frogs are already very well established on Hawaii Island. However, as shown in the animated map at the start of this section, they are only just beginning to establish on other islands. Using the visualizations and the correlated data from temperature and precipitation, we can more easily scout locations of possible occurrences, and thus more easily prevent their spread. Additionally, since we know that Coqui can travel on plants, we must be extra careful in handling and inspecting plants coming from Hawaii Island onto the other islands.
 
-Start with an introduction section, which includes an introduction to yourself, the location you are focused on, and the topics you will cover. **Include a locator map to familiarize the reader with your target area.**
 
-Create a separate section for each topic you will cover. Include an image showing which SDG is related to this topic. Each section will have at least one map (you will add your maps later in step 4.
+## Coconut Rhinoceros Beetle (*Oryctes rhinoceros*)
+The next species we will be looking at is the Coconut Rhinoceros Beetle (CRB). CRB is a highly invasive species that is devastation to palm trees. According to [CRB Response](https://www.crbhawaii.org/), and as reflected in the following map, CRB is not yet established throughout the islands, but is mainly focused on Oʻahu.
 
-### Step 3: Code setup
 
-Add your "setup" code chunk just below the YAML header. This is where you will load all of your libraries and set any global options (add them as you need them for your data retrieval and maps). You can also make #comments about the libraries and code you use below. You want someone to be able to recreate your maps and use your code to create their own.
+&nbsp;
+<center>
+<img src="`r here::here('crb.png')`" class="center" />
+</center>
+&nbsp;
 
-### Step 4: Create your sustainability and resilience maps
+Sadly, the observations in the above map do not correspond exactly to the occurrence of CRB, as it is much more wide-spread on Oʻahu, and there have been (minor) detections on Kauaʻi, Maui, and Hawaiʻi Island. This is another reason why it should be encouraged for governmental and non-governmental entities that track invasive species to share their (raw) data publicly through resources such as [GBIF](https://gbif.org).
 
-Using what you have learned so far in this course, create at least one "static" map and one "interactive" map for your chosen location. Start with just a rough draft. You are welcome to create more than two maps, but start with two and complete steps 5 and 6 for those before you add any more. 
+However, CRB larvae are known to proliferate in mulch piles and green waste, and will happily tag along for the ride when this green waste is transported. Therefore, we should expect CRB occurrences to be more prevalent close to human settlements. By taking the constrained population data of 2020 (the most recent available) from [Worldpop](https://worldpop.org), and adding this to the layer, we see a relatively neat trend appear:
 
-Don't reinvent the wheel if you don't have to. Use the code we have practiced with to get started, and alter the code for your location and topic. If you have draft maps from our previous exercises that work for this, use those! If you can find code online that is similar to what you want to do, use it!
 
-### Step 5: Interpret and explain your maps
+&nbsp;
+<center>
+<img src="`r here::here('crb_pop.png')`" class="center" />
+</center>
+&nbsp;
 
-Add text above and below your map that explains what we can see in the data. This is your explanation and interpretation of the data. 
+It must, however, be noted that this may also be an instance of biased data, as observations uploaded to publicly available spaces such as iNaturalist are much more likely to be made close to where humans generally are. Nonetheless, the above map shows a neat human-flora interface in the spread and proliferation of invasive species. It is known that the remove of mulch piles, such as through burning, is an effective way to get rid of CRB larvae. However, it has been difficult to convince people to do this. Additionally, since CRB larvae have been found in soil bags purchased from retailers such as Home Depot, it is especially important for those purchasing soil to check it thoroughly whenever opening a bag. More importantly, however, producers of soil should be doing additional quality control to ensure no CRB larvae remain in soil bags.
 
-This should include:
+## Little Fire Ant (*Wasmannia auropunctata*)
 
-- Where the data came from
-- Interesting patterns in the data
-- Limitations of the data
-- Recommendations for the community to improve sustainability/resilience based on the data (call to action)
+The last species discussed in this project is the Little Fire Ant (LFA). LFA is a particularly nasty invasive species, and has some of the most direct impacts on human health of the species discussed here: These small ants have a very painful bite, strong enough to blind pets and incapacitate children. They also nest in trees, meaning that they can easily drop down onto a person or other animal. LFA are a relatively recent invasive species, and especially community members are working very hard to prevent their permanent settlement on these islands, as it would destroy certain parts of the Hawaiian way of life.
 
-### Step 6: Improve your maps
+&nbsp;
+<center>
+<img src="`r here::here('lfa.png')`" class="center" />
+</center>
+&nbsp;
 
-Use everything you have learned about cartographic design to improve your maps. Each map should include a title and a legend. 
+As the above map shows, most observations are currently in the Hilo area on Hawaiʻi, with some occurrences on the easternmost part of Oʻahu. Again, this data is incomplete and does not cover known LFA hot-spots such as Kahaluʻu and Kaʻalaeʻa on the windward side of Oʻahu. Again, I know first hand that many of these observations are either logged casually, reported directly to the local or regional liaisons, or are kept in private databases.
 
-You may want to experiment with different highlighted elements, color schemes, classification/symbology schemes, base maps, contextual data, themes, coordinate reference systems, and other elements. You may want to add a note with metadata, such as author (that's you!), data source, date of publication, explanatory text, etc. You may also want to simplify your map by removing certain elements to make it more clear. 
+With the few occurrences we do have, and the knowledge of LFA preferences, we can look at the ground cover (from [LCMS2023](https://data.fs.usda.gov/geodata/rastergateway/LCMS/)), again zoomed in to Hawaii Island for ease of visualization, and see if there are any correlations.
 
-Your goal for each map is to make it *clear, clean, and telling one story* to your reader. 
+&nbsp;
+<center>
+<img src="`r here::here('lfa_cover.png')`" class="center" />
+</center>
+&nbsp;
 
-### Step 7: Make more maps
+To no surprise, LFA are mainly found in forested or grass-forest-herb mixed areas, and especially common around relatively populated areas. Since invasive species are nowadays mainly introduced by humans, especially through the plant and animal trade, it is no surprise that initial establishment of invasives is close to their place of introduction.
 
-If you have time, try to make more maps and follow the instructions for steps 4-6 for each one.
 
-### Step 8: Clean up your R Markdown 
+The fighting of all three invasive species discussed here is a very current issue. However, LFA is a very recent, and very pressing issue. All of these invasive species impact us negatively, but LFA has very direct impacts on our wellbeing. The are multiple grassroots campaigns and action groups that are working directly in communities affected by LFA, but the state-wide effort (for example the Hawaii Ant Lab, which is set to be dismantled) has been floundering due to lack of resources and manpower. 
 
-Check for spelling and formatting mistakes, add more explanatory text, make sure you are telling a story in each section that will lead people to take action based on your map. 
+## Interactive map of the three invasive species
+As a small, interactive map below shows you the three invasive species discussed in this project, as well as some of the additional raster layers used. By switching the raster layers on and off, it can be used to detect further trends not detected by myself so far.
 
-### Step 9: Push your final version to GitHub with a commit message saying "Finished Final Challenge."
 
-## After the Challenge: Additional Resources
+<!--The landcover raster layer could sadly not be included due to its large size -->
+<style>
+.html-widget {
+  margin: auto;
+}
+</style>
+```{r echo=FALSE}
+# Load data
+coqui_occurrences <- read.csv("coqui_occurrences_hawaii_1988_2024.csv")
+crb_occurrences <- read.csv("crb_occurrences_hawaii_1988_2024.csv")
+lfa_occurrences <- read.csv("lfa_occurrences_hawaii_1988_2024.csv")
 
-My hope is that after completing this course, you have some ideas about what you would like to learn next. 
+# Load + crop raster data
+temperature_raster <- raster("wc2.1_30s_bio/wc2.1_30s_bio_1.tif")
+precipitation_raster <- raster("wc2.1_30s_bio/wc2.1_30s_bio_12.tif")
+population_raster = raster("usa_ppp_2020_constrained.tif")
+#landcover_raster = raster("LCMS_HAWAII_v2023-9_Land_Cover_Annual_2023/LCMS_HAWAII_v2023-9_Land_Cover_2023.tif")
+#landcover_wgs84 <- projectRaster(landcover_raster, crs = "+proj=longlat +datum=WGS84 +no_defs") #Since this data is in Albers
 
-Here is a list of resources to help you continue your geospatial data journey:
+hawaii_bbox <- extent(-160, -154, 18, 23)
+temperature_cropped <- crop(temperature_raster, hawaii_bbox)
+precipitation_cropped <- crop(precipitation_raster, hawaii_bbox)
+population_cropped = crop(population_raster, hawaii_bbox)
+#landcover_cropped = crop(landcover_wgs84, hawaii_bbox)
 
-* [Spatial Data Science with R and “terra”](https://rspatial.org) Free tutorials. "These resources teach spatial data analysis and modeling with R. R is a widely used programming language and software environment for data science. R also provides unparalleled opportunities for analyzing spatial data and for spatial modeling."
-* [Spatial Data Science](https://r-spatial.org/book/) Free ebook. "This book introduces and explains the concepts underlying spatial data: points, lines, polygons, rasters, coverages, geometry attributes, data cubes, reference systems, as well as higher-level concepts including how attributes relate to geometries and how this affects analysis. ... The book aims at data scientists who want to get a grip on using spatial data in their analysis. To exemplify how to do things, it uses R."
-* [Analyzing US Census Data: Methods, Maps, and Models in R](https://walker-data.com/census-r/index.html) Free ebook. Check out the rest of this book (we only covered a few chapters) for lots of great ideas for using US Census data. "Census data is widely used in the United States across numerous research and applied fields, including education, business, journalism, and many others. Until recently, the process of working with US Census data has required the use of a wide array of web interfaces and software platforms to prepare, map, and present data products. The goal of this book is to illustrate the utility of the R programming language for handling these tasks, allowing Census data users to manage their projects in a single computing environment."
+# Convert to sf
+coqui_sf <- st_as_sf(coqui_occurrences, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
+crb_sf <- st_as_sf(crb_occurrences, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
+lfa_sf <- st_as_sf(lfa_occurrences, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
+
+# Create map
+leaflet() %>%
+  addTiles() %>%
+  addRasterImage(temperature_cropped, colors = colorNumeric("viridis", values(temperature_cropped), na.color = "transparent"), 
+                 opacity = 0.7, group = "Temperature") %>%
+  addRasterImage(precipitation_cropped, colors = colorNumeric("viridis", values(precipitation_cropped), na.color = "transparent"), 
+                 opacity = 0.7, group = "Precipitation") %>%
+  addRasterImage(population_cropped, colors = colorNumeric("viridis",
+values(population_cropped), na.color = "transparent"), 
+                opacity = 0.7, group = "Population") %>%
+#    addRasterImage(landcover_raster, colors = colorNumeric("viridis",
+#values(landcover_cropped), na.color = "transparent"), 
+#                opacity = 0.7, group = "Population") %>%
+  
+  addCircleMarkers(data = coqui_sf, color = "blue", fillOpacity = 0.7, radius = 4, group = "Coqui",
+                   popup = ~paste("<strong>Coqui Frog</strong><br/>",
+                                  "Date:", ifelse(!is.na(eventDate), eventDate, "N/A"), "<br/>",
+                                  "Coordinates:", decimalLatitude, ", ", decimalLongitude)) %>%
+  addCircleMarkers(data = crb_sf, color = "green", fillOpacity = 0.7, radius = 4, group = "CRB",
+                   popup = ~paste("<strong>Coconut Rhinoceros Beetle</strong><br/>",
+                                  "Date:", ifelse(!is.na(eventDate), eventDate, "N/A"), "<br/>",
+                                  "Coordinates:", decimalLatitude, ", ", decimalLongitude)) %>%
+  addCircleMarkers(data = lfa_sf, color = "red", fillOpacity = 0.7, radius = 4, group = "LFA",
+                   popup = ~paste("<strong>Little Fire Ant</strong><br/>",
+                                  "Date:", ifelse(!is.na(eventDate), eventDate, "N/A"), "<br/>",
+                                  "Coordinates:", decimalLatitude, ", ", decimalLongitude)) %>%
+  addLayersControl(
+    overlayGroups = c("Coqui", "CRB", "LFA", "Temperature", "Precipitation", "Population"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  hideGroup("Temperature") %>%
+  hideGroup("Precipitation") %>%
+  hideGroup("Population")
+```
